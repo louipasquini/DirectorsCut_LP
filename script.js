@@ -1,0 +1,347 @@
+// DirectorsCut Landing Page JavaScript
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all functionality
+    initCarousel();
+    initFAQ();
+    initMobileMenu();
+    initSmoothScrolling();
+    initDownloadTracking();
+    initScrollAnimations();
+});
+
+// Carousel functionality
+function initCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.dot');
+    const prevBtn = document.querySelector('.carousel-btn.prev');
+    const nextBtn = document.querySelector('.carousel-btn.next');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        // Hide all slides
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+
+        // Show current slide
+        if (slides[index]) {
+            slides[index].classList.add('active');
+        }
+        if (dots[index]) {
+            dots[index].classList.add('active');
+        }
+    }
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    // Event listeners
+    if (nextBtn) {
+        nextBtn.addEventListener('click', nextSlide);
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', prevSlide);
+    }
+
+    // Dot navigation
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentSlide = index;
+            showSlide(currentSlide);
+        });
+    });
+
+    // Auto-play carousel (optional)
+    setInterval(nextSlide, 5000);
+}
+
+// FAQ Accordion functionality
+function initFAQ() {
+    const faqItems = document.querySelectorAll('.faq-item');
+
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        question.addEventListener('click', () => {
+            const isActive = item.classList.contains('active');
+            
+            // Close all FAQ items
+            faqItems.forEach(faqItem => {
+                faqItem.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't active
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        });
+    });
+}
+
+// Mobile menu functionality
+function initMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuBtn && navLinks) {
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active');
+        });
+
+        // Close menu when clicking on a link
+        const navLinkItems = navLinks.querySelectorAll('.nav-link');
+        navLinkItems.forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+            });
+        });
+    }
+}
+
+// Smooth scrolling for anchor links
+function initSmoothScrolling() {
+    const anchorLinks = document.querySelectorAll('a[href^="#"]');
+    
+    anchorLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const targetPosition = targetElement.offsetTop - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
+
+// Download tracking and functionality
+function initDownloadTracking() {
+    const downloadBtns = document.querySelectorAll('.download-btn');
+    
+    downloadBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const platform = this.getAttribute('data-platform');
+            const btnText = this.textContent.trim();
+            
+            // Add loading state
+            this.classList.add('loading');
+            this.style.pointerEvents = 'none';
+            
+            // Track download event
+            trackDownload(platform, btnText);
+            
+            // Show success message
+            const platformName = platform === 'zip' ? 'versão portable' : 'instalador';
+            showNotification(`Download iniciado - ${platformName}!`, 'success');
+            
+            // Remove loading state after a short delay
+            setTimeout(() => {
+                this.classList.remove('loading');
+                this.style.pointerEvents = 'auto';
+            }, 2000);
+        });
+    });
+}
+
+// Track download events
+function trackDownload(platform, buttonText) {
+    // Google Analytics event tracking (if implemented)
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'download', {
+            'event_category': 'engagement',
+            'event_label': platform,
+            'value': 1
+        });
+    }
+    
+    // Console log for debugging
+    console.log(`Download tracked: ${platform} - ${buttonText}`);
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Style the notification
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '100px',
+        right: '20px',
+        background: type === 'success' ? '#4ade80' : type === 'error' ? '#ef4444' : '#64B5F6',
+        color: 'white',
+        padding: '1rem 1.5rem',
+        borderRadius: '8px',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+        zIndex: '10000',
+        transform: 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        maxWidth: '300px',
+        wordWrap: 'break-word'
+    });
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after delay
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Scroll animations
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in-up');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    const animatedElements = document.querySelectorAll('.card, .section-title, .hero-content');
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// Utility function to get download URL
+function getDownloadUrl(platform) {
+    const downloadUrls = {
+        windows: 'downloads/DirectorsCut Setup 1.0.0.exe',
+        zip: 'downloads/DirectorsCut-1.0.0-win.zip'
+    };
+    
+    return downloadUrls[platform] || '#';
+}
+
+// Header scroll effect
+window.addEventListener('scroll', function() {
+    const header = document.querySelector('.header');
+    if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+});
+
+// Keyboard navigation for carousel
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+        const prevBtn = document.querySelector('.carousel-btn.prev');
+        if (prevBtn) prevBtn.click();
+    } else if (e.key === 'ArrowRight') {
+        const nextBtn = document.querySelector('.carousel-btn.next');
+        if (nextBtn) nextBtn.click();
+    }
+});
+
+// Performance optimization: Lazy load images (if any are added later)
+function initLazyLoading() {
+    const images = document.querySelectorAll('img[data-src]');
+    
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.classList.remove('lazy');
+                imageObserver.unobserve(img);
+            }
+        });
+    });
+    
+    images.forEach(img => imageObserver.observe(img));
+}
+
+// Error handling
+window.addEventListener('error', function(e) {
+    console.error('JavaScript error:', e.error);
+    // You could send error reports to a service here
+});
+
+// Service Worker registration (for PWA capabilities if needed)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+                console.log('ServiceWorker registration successful');
+            })
+            .catch(function(err) {
+                console.log('ServiceWorker registration failed');
+            });
+    });
+}
+
+// Analytics helper functions
+function trackEvent(category, action, label, value) {
+    // Google Analytics 4
+    if (typeof gtag !== 'undefined') {
+        gtag('event', action, {
+            event_category: category,
+            event_label: label,
+            value: value
+        });
+    }
+    
+    // Google Analytics Universal
+    if (typeof ga !== 'undefined') {
+        ga('send', 'event', category, action, label, value);
+    }
+}
+
+// Track page views
+function trackPageView(page) {
+    if (typeof gtag !== 'undefined') {
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            page_title: document.title,
+            page_location: window.location.href
+        });
+    }
+}
+
+// Initialize page tracking
+trackPageView();
+
+// Export functions for potential external use
+window.DirectorsCutLanding = {
+    trackEvent,
+    showNotification,
+    trackDownload
+};

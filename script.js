@@ -19,13 +19,30 @@ function initCarousel() {
     let currentSlide = 0;
 
     function showSlide(index) {
-        // Hide all slides
-        slides.forEach(slide => slide.classList.remove('active'));
+        // Hide all slides with smooth transition
+        slides.forEach((slide, i) => {
+            if (i !== index) {
+                slide.style.opacity = '0';
+                slide.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    slide.classList.remove('active');
+                }, 150);
+            }
+        });
         dots.forEach(dot => dot.classList.remove('active'));
 
-        // Show current slide
+        // Show current slide with smooth transition
         if (slides[index]) {
             slides[index].classList.add('active');
+            slides[index].style.opacity = '0';
+            slides[index].style.transform = 'translateX(-20px)';
+            
+            // Force reflow
+            slides[index].offsetHeight;
+            
+            slides[index].style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            slides[index].style.opacity = '1';
+            slides[index].style.transform = 'translateX(0)';
         }
         if (dots[index]) {
             dots[index].classList.add('active');
@@ -92,9 +109,19 @@ function initMobileMenu() {
     const navLinks = document.querySelector('.nav-links');
 
     if (mobileMenuBtn && navLinks) {
-        mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
             navLinks.classList.toggle('active');
             mobileMenuBtn.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (navLinks.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         });
 
         // Close menu when clicking on a link
@@ -103,7 +130,26 @@ function initMobileMenu() {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
                 mobileMenuBtn.classList.remove('active');
+                document.body.style.overflow = '';
             });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navLinks.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
     }
 }

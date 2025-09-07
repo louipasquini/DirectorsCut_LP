@@ -8,7 +8,30 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScrolling();
     initDownloadTracking();
     initScrollAnimations();
+    initHeroAnimation();
 });
+
+// Hero section entrance animation
+function initHeroAnimation() {
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        // Add initial animation class
+        heroContent.classList.add('animate-scale-in');
+        
+        // Animate hero elements with delay
+        const heroElements = heroContent.querySelectorAll('h1, h2, p, .hero-buttons, .hero-compatibility');
+        heroElements.forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 300 + (index * 150));
+        });
+    }
+}
 
 // Carousel functionality
 function initCarousel() {
@@ -19,30 +42,13 @@ function initCarousel() {
     let currentSlide = 0;
 
     function showSlide(index) {
-        // Hide all slides with smooth transition
-        slides.forEach((slide, i) => {
-            if (i !== index) {
-                slide.style.opacity = '0';
-                slide.style.transform = 'translateX(20px)';
-                setTimeout(() => {
-                    slide.classList.remove('active');
-                }, 150);
-            }
-        });
+        // Hide all slides
+        slides.forEach(slide => slide.classList.remove('active'));
         dots.forEach(dot => dot.classList.remove('active'));
 
-        // Show current slide with smooth transition
+        // Show current slide
         if (slides[index]) {
             slides[index].classList.add('active');
-            slides[index].style.opacity = '0';
-            slides[index].style.transform = 'translateX(-20px)';
-            
-            // Force reflow
-            slides[index].offsetHeight;
-            
-            slides[index].style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            slides[index].style.opacity = '1';
-            slides[index].style.transform = 'translateX(0)';
         }
         if (dots[index]) {
             dots[index].classList.add('active');
@@ -265,23 +271,29 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Scroll animations
+// New smooth scroll animations
 function initScrollAnimations() {
     const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.15,
+        rootMargin: '0px 0px -30px 0px'
     };
     
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry, index) => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in-up');
+                // Add staggered animation delay
+                setTimeout(() => {
+                    entry.target.classList.add('animate-fade-in');
+                }, index * 100);
+                
+                // Stop observing this element
+                observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
     
     // Observe elements for animation
-    const animatedElements = document.querySelectorAll('.card, .section-title, .hero-content');
+    const animatedElements = document.querySelectorAll('.card, .section-title, .hero-content, .feature-card, .step-card, .example-card');
     animatedElements.forEach(el => {
         observer.observe(el);
     });

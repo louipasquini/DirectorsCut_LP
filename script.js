@@ -271,20 +271,25 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// New smooth scroll animations
+// Improved smooth scroll animations
 function initScrollAnimations() {
     const observerOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -30px 0px'
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
     };
     
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                // Add staggered animation delay
-                setTimeout(() => {
-                    entry.target.classList.add('animate-fade-in');
-                }, index * 100);
+                // Add smooth fade-in animation
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(30px)';
+                entry.target.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                
+                // Force reflow and animate
+                entry.target.offsetHeight;
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
                 
                 // Stop observing this element
                 observer.unobserve(entry.target);
@@ -292,10 +297,21 @@ function initScrollAnimations() {
         });
     }, observerOptions);
     
-    // Observe elements for animation
-    const animatedElements = document.querySelectorAll('.card, .section-title, .hero-content, .feature-card, .step-card, .example-card');
-    animatedElements.forEach(el => {
-        observer.observe(el);
+    // Observe different types of elements with different delays
+    const sectionTitles = document.querySelectorAll('.section-title');
+    const featureCards = document.querySelectorAll('.feature-card');
+    const stepCards = document.querySelectorAll('.step-card');
+    const exampleCards = document.querySelectorAll('.example-card');
+    const otherCards = document.querySelectorAll('.card:not(.feature-card):not(.step-card):not(.example-card)');
+    
+    // Animate section titles first
+    sectionTitles.forEach((el, index) => {
+        setTimeout(() => observer.observe(el), index * 200);
+    });
+    
+    // Then animate cards with staggered timing
+    [...featureCards, ...stepCards, ...exampleCards, ...otherCards].forEach((el, index) => {
+        setTimeout(() => observer.observe(el), 500 + (index * 100));
     });
 }
 

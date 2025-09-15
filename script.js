@@ -201,7 +201,14 @@ function initDownloadTracking() {
             trackDownload(platform, btnText);
             
             // Show success message
-            const platformName = platform === 'zip' ? 'versão portable' : 'instalador';
+            let platformName;
+            if (platform === 'zip') {
+                platformName = 'versão portable';
+            } else if (platform === 'linux') {
+                platformName = 'versão Linux';
+            } else {
+                platformName = 'instalador';
+            }
             showNotification(`Download iniciado - ${platformName}!`, 'success');
             
             // Remove loading state after a short delay
@@ -319,6 +326,7 @@ function initScrollAnimations() {
 function getDownloadUrl(platform) {
     const downloadUrls = {
         windows: 'downloads/DirectorsCut Setup 1.0.0.exe',
+        linux: 'downloads/directorscut_1.0.0_amd64.deb',
         zip: 'downloads/DirectorsCut-1.0.0-win.zip'
     };
     
